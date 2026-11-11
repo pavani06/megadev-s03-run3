@@ -1,0 +1,51 @@
+---
+layout: runbook
+title: '#4471 · three problems in one ticket'
+owner: pavani06
+status: open
+reviewed: 2026-11-10
+signature: 'v1.eyJzdWIiOiIxNDkyIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTQzNTI3ODAsImV4cCI6MTc5NDQzOTE4MH0.ehlMDZTFhIzr7CSMsh_nZSOqMrRAWWSg8CNRsH6LLxQ'
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+The desk merged every report of a booking date gone wrong into #4471 as one issue. Read by tenant,
+the way the desk's own rules read them, those reports hold three problems, and each needs a fix of
+its own.
+
+## The three problems
+
+<ProblemTable ticket={4471} />
+
+- **`parser`**: the shared date parser takes the first number of a date as the month. Tenants whose
+  locale writes the day first get day and month swapped, on every channel: the app, email, and the
+  booking form whose hint reads day first.
+- **`hint`**: the other booking form prints a month-first hint (`MM/DD/YYYY`) under its date field.
+  On a day-first tenant, people type the month first because the hint tells them to, and the form
+  reads the field day first, so day and month swap. Only reports sent through that form have this
+  cause, and fixing the parser does not fix it.
+- **`one-day`**: reports the desk read as a booking moved by one day, or as one meeting showing a
+  different weekday in different places. A swap of day and month does not explain them. The desk
+  files them under `parser` by tenant, so the `parser` count includes them; they still need a look
+  of their own.
+
+## Where the counts come from
+
+Both tables are built at render time from the ticket system's export, with the desk's rules in
+`src/lib/kb/causes.ts`: one report per id, filed by its tenant's locale and booking form, not by the
+tag intake gave it. The one-day reports are the ones the desk listed in its notes. The desk's cause
+table for #4471, as it stands:
+
+<CauseTable ticket={4471} />
+
+## The tickets
+
+Each problem gets a ticket of its own, titled after it, with its count and the ids of its reports:
+one for the shared parser, one for the booking form's hint, one for the one-day moves. Each says that
+its reports were merged into #4471.
+
+<RenderStamp {signature} />
